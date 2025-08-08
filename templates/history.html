@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block head %} {% endblock %}
+
+{% block body %}
+    <a href="{{ url_for('index') }}"><button>Home</button></a>
+
+    <h1>View Game History</h1>
+    <p>Please enter the game ID</p>
+
+    <div>
+        <h2>Game ID:</h2>
+        <input type="text" name="game_id" id="game_id" placeholder="Enter Game ID">
+        <button id="view_history">View History</button>
+    </div>
+
+{% endblock %}

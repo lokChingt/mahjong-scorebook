@@ -1,0 +1,55 @@
+body {
+  background-color: #DEE6D9;
+}
+
+h1, p {
+  color: #305C52;
+  text-align: center;
+}
+
+button {
+  background-color: #305C52;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 10px 5px;
+  border-radius: 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+input[type=text] {
+  padding: 10px;
+  margin: 10px 10px;
+  border: 1px solid #305C52;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.player {
+  border: 1px solid #305C52;
+  border-radius: 8px;
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}/*# sourceMappingURL=styles.css.map */

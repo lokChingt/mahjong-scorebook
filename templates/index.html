@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block head %} {% endblock %}
+
+{% block body %}
+    <h1>Mahjong Scorebook</h1>
+    <p>Welcome to the Mahjong Scorebook! 
+        <br>
+        You can start a new game, view the game history, 
+        or check the leaderboard.
+    </p>
+
+    <div class="menu">
+        <a href="{{ url_for('start_game') }}"><button>Start New Game</button></a>
+        <a href="{{ url_for('view_history') }}"><button>View Game History</button></a>
+        <a href="{{ url_for('leaderboard') }}"><button>Leaderboard</button></a>
+    </div>
+    
+
+{% endblock %}

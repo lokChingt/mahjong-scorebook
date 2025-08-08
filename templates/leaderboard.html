@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block head %} {% endblock %}
+
+{% block body %}
+    <a href="{{ url_for('index') }}"><button>Home</button></a>
+    <h1>Leaderboard</h1>
+    <p>Here are the top players based on their scores:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Player Name</th>
+                <th>Total Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for player in leaderboard %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ player.name }}</td>
+                <td>{{ player.total_score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
