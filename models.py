@@ -12,10 +12,10 @@ class Game(db.Model):
 
 class Player(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), nullable=False, unique=True)
     played_num = db.Column(db.Integer, default=0)
-    first_play_at = db.Column(db.DateTime, default=datetime)
-    last_play_at = db.Column(db.DateTime, default=datetime)
+    first_play_at = db.Column(db.DateTime, default=datetime.now)
+    last_play_at = db.Column(db.DateTime, default=datetime.now)
 
 
 class GamePlayer(db.Model):

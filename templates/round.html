@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block head %} {% endblock %}
+
+{% block body %}
+
+    <h1>Game #{{ game_id }}</h1>
+    <h2>Round #{{ round_num }}</h2>
+    <p>Here you can enter and view each round result of the game.</p>
+
+    <form method="POST">
+        <table>
+            <tr>
+                <td>Faan:</td>
+                <td>
+                    <input type="number" name="faan" placeholder="How many faan?" min='0' required>
+                </td>
+            </tr>
+            <tr>
+                <td>Who wins?</td>
+                <td>
+                    <select name="winner" id="winner">
+                        <option value="test">test</option>
+                        {% for name in players_names %}
+                            <option value="{{ name }}">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr class="radio">
+                <td>Self-drawn?</td>
+                <td>
+                    <input type="radio" name="self-drawn" value="Yes" onclick="toggleDealInner(this)" required>
+                    <label for="yes">Yes</label>
+                    <input type="radio" name="self-drawn" value="No" onclick="toggleDealInner(this)" required>
+                    <label for="no">No</label>
+                </td>
+            </tr>
+            <tr id="extra-question" style="display: none;">
+                <td>Who deal-in?</td>
+                <td>
+                    <select name="deal_inner" id="deal_inner">
+                        <option value="test">test</option>
+                        {% for name in players_names %}
+                            <option value="{{ name }}">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <button type="submit" class="center">Add Result</button>
+    </form>
+    <a href="{{ url_for ('index') }}"><button>Finish</button></a>
+    
+
+    <!-- Check if there are any rounds played -->
+    {% if not round_list %}
+        <p>No rounds have been played yet.</p>
+    {% else %}
+        <p>Here are the results of the previous rounds:</p>
+    {% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Round</th>
+                {% for player in players_names %}
+                    <th>{{ player }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for round in round_list %}
+            <tr>
+                <td>{{ round.round_num }}</td>
+                <td>{{ round.Player_1 }}</td>
+                <td>{{ round.Player_2 }}</td>
+                <td>{{ round.Player_3 }}</td>
+                <td>{{ round.Player_4 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

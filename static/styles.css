@@ -2,7 +2,7 @@ body {
   background-color: #DEE6D9;
 }
 
-h1, p {
+h1, h2, p {
   color: #305C52;
   text-align: center;
 }
@@ -26,23 +26,17 @@ input[type=text] {
   font-size: 16px;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
 div {
   display: flex;
   flex-wrap: wrap;
+  flex-direction: column;
   justify-content: center;
+  margin: 10px;
 }
 
 .player {
   border: 1px solid #305C52;
   border-radius: 8px;
-  margin: 10px;
-  display: flex;
   flex-direction: column;
   align-items: center;
 }
@@ -51,5 +45,34 @@ div {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+label {
+  margin: 10px 10px;
+}
+
+form {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #305C52;
+  border-radius: 8px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.radio label {
+  margin: 5px;
+}
+
+table, th, td {
+  padding: 10px;
+  text-align: left;
+  margin: auto;
+  border-collapse: collapse;
   margin-top: 20px;
 }/*# sourceMappingURL=styles.css.map */

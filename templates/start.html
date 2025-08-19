@@ -3,33 +3,29 @@
 {% block head %} {% endblock %}
 
 {% block body %}
-    <a href="{{ url_for('index') }}"><button>Home</button></a>
     
     <h1>Start New Game</h1>
     <p>Please enter the names of the players below:</p>
 
-    <div class="form">
-        <div class="player-inputs">
-            <div class="player">
-                <h2>Player 1</h2>
-                <input type="text" name="player_name" id="name" placeholder="Name">
-            </div>
-            <div class="player">
-                <h2>Player 2</h2>
-                <input type="text" name="player_name" id="name" placeholder="Name">
-            </div>
-            <div class="player">
-                <h2>Player 3</h2>
-                <input type="text" name="player_name" id="name" placeholder="Name">
-            </div>
-            <div class="player">
-                <h2>Player 4</h2>
-                <input type="text" name="player_name" id="name" placeholder="Name">
-            </div>
+    <form class="player-inputs" action="{{ url_for('start_game') }}" method="POST">
+        <div class="player">
+            <label>Player 1</label>
+            <input type="text" name="player_name" placeholder="Name" required>
         </div>
-        <button id="start_game">Start Game</button>
-    </div>
-
+        <div class="player">
+            <label>Player 2</label>
+            <input type="text" name="player_name" placeholder="Name" required>
+        </div>
+        <div class="player">
+            <label>Player 3</label>
+            <input type="text" name="player_name" placeholder="Name" required>
+        </div>
+        <div class="player">
+            <label>Player 4</label>
+            <input type="text" name="player_name" placeholder="Name" required>
+        </div>
+        <button type="submit">Start</button>
+    </form>
     
 
 {% endblock %}
