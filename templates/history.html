@@ -7,10 +7,13 @@
     <h1>View Game History</h1>
     <p>Please enter the game ID</p>
 
-    <div>
+    <form method="POST" action="{{ url_for('view_history') }}">
         <label>Game ID:</label>
         <input type="text" name="game_id" id="game_id" placeholder="Enter Game ID" required>
-        <button id="view_history">View History</button>
-    </div>
+        <button type="submit" id="view_history">View History</button>
+    </form>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
 
 {% endblock %}

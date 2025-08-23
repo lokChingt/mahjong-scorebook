@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block head %} {% endblock %}
+
+{% block body %}
+
+    <h1>Game #{{ game_id }} info:</h1>
+    <p>Here you can view the game information and results.</p>
+
+
+    <!-- Display the game information -->
+    <table>
+        <h2>Game Information</h2>
+        <tbody>
+            <tr>
+                <td>Game ID:</td>
+                <td>{{ game_id }}</td>
+            </tr>
+            <tr>
+                <td>Total Rounds Played:</td>
+                <td>{{ total_rounds }}</td>
+            </tr>
+            <tr>
+                <td>Start Time:</td>
+                <td>{{ start_time }}</td>
+            </tr>
+            <tr>
+                <td>End Time:</td>
+                <td>{{ end_time }}</td>
+            </tr>
+            <tr>
+                <td>Total Time Spent:</td>
+                <td>{{ total_time }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Display the player list -->
+    <table>
+        <!-- leaderboard -->
+        <h2>Player List</h2>
+        <thead>
+            <tr>
+                <th>Player Name</th>
+                <th>Total Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for player in players %}
+                <tr>
+                    <td>{{ player.name }}</td>
+                    <td>{{ player.total_score }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

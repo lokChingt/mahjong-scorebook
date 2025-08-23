@@ -13,7 +13,7 @@
             <tr>
                 <td>Faan:</td>
                 <td>
-                    <input type="number" name="faan" placeholder="How many faan?" min='0' required>
+                    <input type="number" name="faan" placeholder="How many faan?" min='1' required>
                 </td>
             </tr>
             <tr>
@@ -50,7 +50,7 @@
         </table>
         <button type="submit" class="center">Add Result</button>
     </form>
-    <a href="{{ url_for ('index') }}"><button>Finish</button></a>
+    <a href="{{ url_for ('end_game', game_id=game_id ) }}"><button>Finish</button></a>
     
 
     <!-- Check if there are any rounds played -->
@@ -73,10 +73,10 @@
             {% for round in round_list %}
             <tr>
                 <td>{{ round.round_num }}</td>
-                <td>{{ round.Player_1 }}</td>
-                <td>{{ round.Player_2 }}</td>
-                <td>{{ round.Player_3 }}</td>
-                <td>{{ round.Player_4 }}</td>
+                <td>{{ round.player_1_score }}</td>
+                <td>{{ round.player_2_score }}</td>
+                <td>{{ round.player_3_score }}</td>
+                <td>{{ round.player_4_score }}</td>
             </tr>
             {% endfor %}
         </tbody>

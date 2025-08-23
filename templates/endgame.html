@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block head %} {% endblock %}
+
+{% block body %}
+
+    <h1>Game #{{ game_id }} Finished!</h1>
+    <p>Thank you for playing! Here are the final results:</p>
+
+    <!-- Dmisplay the final scores of each player, total rounds played, time spent, etc. -->
+    <table>
+        <!-- leaderboard -->
+        <h2>Leaderboard</h2>
+        <thead>
+            <tr>
+                <th>Player Name</th>
+                <th>Total Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for player in player_list %}
+                <tr>
+                    <td>{{ player.name }}</td>
+                    <td>{{ player.total_score }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p>Total Rounds Played: {{ total_rounds }}</p>
+    <p>Total Time Spent: {{ total_time }}</p>
+
+{% endblock %}
