@@ -67,7 +67,7 @@ def start_game():
 
 @app.route("/game/<int:game_id>/round/<int:round_num>", methods=["GET", "POST"])
 def add_round_result(game_id, round_num):
-    players = db.session.query(Player).join(GamePlayer).filter(GamePlayer.game_id==game_id).all()
+    players = db.session.query(Player).join(GamePlayer).filter(GamePlayer.game_id==game_id).order_by(GamePlayer.player_num).all()
     players_names = [player.name for player in players]
 
     # Handle form submission for round results
@@ -130,22 +130,25 @@ def add_round_result(game_id, round_num):
 
         db.session.commit()
         # Move to next round
-        return redirect(url_for('add_round_result', game_id=game_id, round_num=round_num+1))
-    # end if
+        return redirect(url_for('add_round_result', 
+                                game_id=game_id, 
+                                round_num=round_num+1))
+    # end POST
     
     
     # GET: Show the results of the previous rounds
-    # Get the round_num and scores for the game
     rounds = (
         db.session.query(
             RoundResult.round_num,
             *[
                 func.sum(
-                    case((GamePlayer.player_num == i, RoundResult.score), else_=0)).label(f"Player_{i}_score")
+                    case((GamePlayer.player_num == i, RoundResult.score), else_=0)
+                    ).label(f"Player_{i}_score")
                 for i in range(1, 5)
             ],
         )
-        .join(GamePlayer, (RoundResult.player_id == GamePlayer.player_id) & (RoundResult.game_id == GamePlayer.game_id))
+        .join(GamePlayer, (RoundResult.game_id == GamePlayer.game_id) 
+              & (RoundResult.player_id == GamePlayer.player_id))
         .filter(RoundResult.game_id == game_id)
         .group_by(RoundResult.round_num)
         .order_by(RoundResult.round_num)
@@ -163,7 +166,31 @@ def add_round_result(game_id, round_num):
         for r in rounds
     ]
     app.logger.info(f"Round list: {round_list}")
-    return render_template('round.html', game_id=game_id, round_num=round_num, players_names=players_names, round_list=round_list)
+
+    # Sum scores per player
+    scores = (
+        db.session.query(
+            RoundResult.player_id,
+            func.sum(RoundResult.score).label("total_score")
+        )
+        .filter(RoundResult.game_id == game_id)
+        .group_by(RoundResult.player_id)
+        .order_by(func.sum(RoundResult.score).desc())
+    ).all()
+
+    if scores:
+        top_score = scores[0].total_score
+        leaders = [s.player_id for s in scores if s.total_score == top_score]
+    else:
+        leaders = []
+
+    return render_template('round.html', 
+                           game_id=game_id, 
+                           round_num=round_num, 
+                           players_names=players_names, 
+                           round_list=round_list, 
+                           leadingPlayerId=leaders)
+
 
 @app.route("/end/game/<int:game_id>")
 def end_game(game_id):

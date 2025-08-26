@@ -20,7 +20,7 @@
                 <td>Who wins?</td>
                 <td>
                     <select name="winner" id="winner">
-                        <option value="test">test</option>
+                        <option value="test">Choose</option>
                         {% for name in players_names %}
                             <option value="{{ name }}">{{ name }}</option>
                         {% endfor %}
@@ -40,7 +40,7 @@
                 <td>Who deal-in?</td>
                 <td>
                     <select name="deal_inner" id="deal_inner">
-                        <option value="test">test</option>
+                        <option value="test">Choose</option>
                         {% for name in players_names %}
                             <option value="{{ name }}">{{ name }}</option>
                         {% endfor %}
@@ -60,26 +60,42 @@
         <p>Here are the results of the previous rounds:</p>
     {% endif %}
 
-    <table>
-        <thead>
-            <tr>
-                <th>Round</th>
-                {% for player in players_names %}
-                    <th>{{ player }}</th>
+    <!-- Show who is leading -->
+    <p>leader: {{leadingPlayerId}}</p>
+    <div id="game-container" data-game-id="{{ game_id }}">
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    {% for i in range(1, 5) %}
+                        <th id="crown-{{ i }}" class="crown" style="visibility: hidden;">👑</th>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>Round</th>
+                    {% for player in players_names %}
+                        <th>{{ player }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for round in round_list %}
+                <tr>
+                    <td>{{ round.round_num }}</td>
+                    <td>{{ round.player_1_score }}</td>
+                    <td>{{ round.player_2_score }}</td>
+                    <td>{{ round.player_3_score }}</td>
+                    <td>{{ round.player_4_score }}</td>
+                </tr>
                 {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for round in round_list %}
-            <tr>
-                <td>{{ round.round_num }}</td>
-                <td>{{ round.player_1_score }}</td>
-                <td>{{ round.player_2_score }}</td>
-                <td>{{ round.player_3_score }}</td>
-                <td>{{ round.player_4_score }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 
+    <!-- Pass leading player id to JS on page load -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            showCrownForLeader({{ leadingPlayerId }});
+        });
+    </script>
 {% endblock %}
