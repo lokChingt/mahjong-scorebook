@@ -9,10 +9,10 @@ function toggleDealInner(radio) {
 }
 
 // Function to show the crown for the given player_id
-function showCrownForLeader(playerId) {
-    playerId.forEach((id) => {
-        console.log("Leading player ID:", id);
-        const crown = document.getElementById(`crown-${id}`);
+function showCrownForLeader(players) {
+    players.forEach((player_num) => {
+        console.log("Leading player ID:", player_num);
+        const crown = document.getElementById(`crown-${player_num}`);
         if (crown) {
             crown.style.visibility = "visible";
         }

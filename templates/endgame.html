@@ -13,6 +13,7 @@
         <h2>Leaderboard</h2>
         <thead>
             <tr>
+                <th></th>
                 <th>Player Name</th>
                 <th>Total Score</th>
             </tr>
@@ -20,6 +21,11 @@
         <tbody>
             {% for player in player_list %}
                 <tr>
+                    {% if (player == player_list[0]) %}
+                        <th>👑</th>
+                    {% else %}
+                        <th></th>
+                    {% endif %}
                     <td>{{ player.name }}</td>
                     <td>{{ player.total_score }}</td>
                 </tr>

@@ -1,7 +1,6 @@
 # Imports
 from flask import Flask, render_template, redirect, request, url_for
 from flask_scss import Scss
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select, func, case
 from datetime import datetime
 
@@ -87,7 +86,7 @@ def add_round_result(game_id, round_num):
         else: # not self-drawn
             winner_score = pow(2, faan) * 2
             deal_inner_score = -pow(2, faan)
-            others_score = -pow(2, faan)/2 # Adjusted to handle float division
+            others_score = -pow(2, faan)/2
         
         # Get all player IDs
         players_id = db.session.execute(
@@ -170,17 +169,19 @@ def add_round_result(game_id, round_num):
     # Sum scores per player
     scores = (
         db.session.query(
-            RoundResult.player_id,
+            GamePlayer.player_num,
             func.sum(RoundResult.score).label("total_score")
         )
         .filter(RoundResult.game_id == game_id)
-        .group_by(RoundResult.player_id)
+        .join(GamePlayer, (RoundResult.game_id == GamePlayer.game_id) 
+              & (RoundResult.player_id == GamePlayer.player_id))
+        .group_by(GamePlayer.player_num)
         .order_by(func.sum(RoundResult.score).desc())
     ).all()
 
     if scores:
         top_score = scores[0].total_score
-        leaders = [s.player_id for s in scores if s.total_score == top_score]
+        leaders = [s.player_num for s in scores if s.total_score == top_score]
     else:
         leaders = []
 
@@ -257,40 +258,65 @@ def end_game(game_id):
 
     db.session.commit()
     
-    return render_template('endgame.html', game_id=game_id, player_list=player_list, total_rounds=total_rounds, total_time=time_diff)
+    return render_template('endgame.html', 
+                           game_id=game_id, 
+                           player_list=player_list, 
+                           total_rounds=total_rounds, 
+                           total_time=time_diff)
+
 
 @app.route("/history", methods=["GET", "POST"])
 def view_history():
     if request.method == 'POST':
         game_id = request.form.get("game_id")
-        if game_id:
+        if game_id in [str(g.id) for g in Game.query.all()]:
                 return redirect(url_for('game_info', game_id=game_id))
         else:
             return render_template('history.html', error="Game ID does not exist.")
         
     return render_template('history.html')
 
+
 @app.route("/history/game/<int:game_id>")
 def game_info(game_id):
     # Get game info
     total_rounds = db.session.query(Game.total_rounds).filter(Game.id == game_id).scalar()
-    start_time = db.session.query(Game.start_at).filter(Game.id == game_id).scalar()
-    end_time = db.session.query(Game.end_at).filter(Game.id == game_id).scalar()
-    total_time = str(end_time - start_time).split(".")[0] if end_time else "N/A"
+    start_at = db.session.query(Game.start_at).filter(Game.id == game_id).scalar()
+    end_at = db.session.query(Game.end_at).filter(Game.id == game_id).scalar()
+    total_time = str(end_at - start_at).split(".")[0] if end_at else "N/A"
 
+    # Format date and time
+    if start_at and end_at:
+        date = start_at.strftime("%Y-%m-%d")
+        start_time = start_at.strftime("%H:%M:%S")
+        end_time = end_at.strftime("%H:%M:%S")
+    else:
+        date = "N/A"
+        start_time = "N/A"
+        end_time = "N/A"
+
+    # Get players and their scores
     players = (
         db.session.query(
             Player.name,
-            PlayerResult.total_score
+            func.sum(PlayerResult.total_score).label("total_score"),
         )
         .join(PlayerResult, PlayerResult.player_id == Player.id)
-        .filter(PlayerResult.game_id == game_id)
-        .order_by(Player.id)
+        .group_by(Player.name)
+        .order_by(func.sum(PlayerResult.total_score).desc())
         .all()
     )
     app.logger.info(f"Players in game {game_id}: {players}")
 
-    return render_template('gameinfo.html', game_id=game_id, total_rounds=total_rounds, start_time=start_time, end_time=end_time, total_time=total_time, players=players)
+    return render_template('gameinfo.html', 
+                           game_id=game_id, 
+                           total_rounds=total_rounds,
+                           date=date,
+                           start_time=start_time, 
+                           end_time=end_time, 
+                           total_time=total_time, 
+                           players=players)
+
 
 @app.route("/leaderboard")
 def leaderboard():
@@ -298,10 +324,11 @@ def leaderboard():
     players = (
         db.session.query(
             Player.name,
-            PlayerResult.total_score
+            func.sum(PlayerResult.total_score).label("total_score"),
         )
         .join(PlayerResult, PlayerResult.player_id == Player.id)
-        .order_by(PlayerResult.total_score.desc())
+        .group_by(Player.name)
+        .order_by(func.sum(PlayerResult.total_score).desc())
         .all()
     )
     return render_template('leaderboard.html', players=players)
