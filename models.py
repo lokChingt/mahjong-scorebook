@@ -21,29 +21,18 @@ class Player(db.Model):
 
 
 class GamePlayer(db.Model):
-    __tablename__ = 'game_player'
-
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), primary_key=True)
     player_num = db.Column(db.Integer, nullable=False, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'))
 
-    @classmethod
-    def default_order(cls):
-        return cls.query.order_by(cls.game_id.asc())
-
 
 class PlayerResult(db.Model):
-    __tablename__ = 'player_result'
-
-    id = db.Column(db.Integer, primary_key=True)
-    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
-    player_id = db.Column(db.Integer, db.ForeignKey('player.id'))
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), primary_key=True)
     total_score = db.Column(db.Integer, default=0)
 
 
 class RoundResult(db.Model):
-    __tablename__ = 'round_result'
-
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), primary_key=True)
     round_num = db.Column(db.Integer, default=1, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), primary_key=True)
