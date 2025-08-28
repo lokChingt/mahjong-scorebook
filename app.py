@@ -67,7 +67,7 @@ def start_game():
 @app.route("/game/<int:game_id>/round/<int:round_num>", methods=["GET", "POST"])
 def add_round_result(game_id, round_num):
     players = db.session.query(Player).join(GamePlayer).filter(GamePlayer.game_id==game_id).order_by(GamePlayer.player_num).all()
-    players_names = [player.name for player in players]
+    players_info = [{"id": player.id, "name": player.name} for player in players]
 
     # Handle form submission for round results
     if request.method == 'POST':
@@ -188,7 +188,7 @@ def add_round_result(game_id, round_num):
     return render_template('round.html', 
                            game_id=game_id, 
                            round_num=round_num, 
-                           players_names=players_names, 
+                           players_info=players_info, 
                            round_list=round_list, 
                            leadingPlayerId=leaders)
 
