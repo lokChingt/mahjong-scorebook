@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block head %} {% endblock %}
+
+{% block body %}
+
+    <h1>Edit Game #{{game_id}} Round #{{ round_num }}</h1>
+    <p>Please edit the scores</p>
+
+    <form action="{{ url_for('edit', game_id=game_id, round_num=round_num) }}" method="POST">
+        <table>
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in players %}
+                <tr>
+                    <td>{{ player.name }}:</td>
+                    <td>
+                        <input type="number" name="player{{ player.id }}_score" value="{{ player.score }}" required>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="center">Update Result</button>
+    </form>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+{% endblock %}

@@ -57,7 +57,6 @@ def start_game():
             db.session.add(game_player)
         
         db.session.commit()
-        app.logger.info(f"New Game #{new_game.id} started with players: {', '.join(names)}")
         return redirect(url_for('add_round_result', game_id=new_game.id, round_num=1))
     else:
         return render_template('start.html')
@@ -72,15 +71,15 @@ def add_round_result(game_id, round_num):
     # Handle form submission for round results
     if request.method == 'POST':
         faan = int(request.form.get("faan"))
-        winner = request.form.get("winner")
-        deal_inner = request.form.get("deal_inner")
 
         # Get winner and deal-inner IDs
-        winner_id = db.session.query(Player.id).filter_by(name=winner).scalar()
-        deal_inner_id = db.session.query(Player.id).filter_by(name=deal_inner).scalar()
+        winner_id = int(request.form.get("winner"))
+        deal_inner_id = request.form.get("deal_inner")
+        if deal_inner_id:
+            deal_inner_id = int(deal_inner_id)
 
         # Calculate score
-        if deal_inner_id is None: # self-drawn
+        if not deal_inner_id: # self-drawn
             winner_score = pow(2, faan) * 3
             others_score = -pow(2, faan)
         else: # not self-drawn
@@ -93,9 +92,8 @@ def add_round_result(game_id, round_num):
             select(Player.id).join(GamePlayer).where(GamePlayer.game_id == game_id)
         ).scalars().all()
 
-        app.logger.info(f"Form players_id value: {players_id!r}")
         
-        #Queries to input results
+        # Queries to input results
         winner_result = RoundResult(
             game_id=game_id,
             round_num=round_num, 
@@ -104,7 +102,7 @@ def add_round_result(game_id, round_num):
         )
         db.session.add(winner_result)
         
-        if deal_inner_id is not None:
+        if deal_inner_id:
             deal_inner_result = RoundResult(
                 game_id=game_id, 
                 round_num=round_num, 
@@ -116,7 +114,6 @@ def add_round_result(game_id, round_num):
 
         for others_id in players_id:
             if others_id != winner_id and others_id != deal_inner_id:
-                app.logger.info(f"Form others_id value: {others_id!r}")
                 others_result = RoundResult(
                     game_id=game_id, 
                     round_num=round_num, 
@@ -164,7 +161,6 @@ def add_round_result(game_id, round_num):
         }
         for r in rounds
     ]
-    app.logger.info(f"Round list: {round_list}")
 
     # Sum scores per player
     scores = (
@@ -192,6 +188,75 @@ def add_round_result(game_id, round_num):
                            round_list=round_list, 
                            leadingPlayerId=leaders)
 
+@app.route("/game/<int:game_id>/round/<int:round_num>/edit", methods=["GET", "POST"])
+def edit(game_id, round_num):
+    players = (
+        db.session.query(
+            Player.id,
+            Player.name,
+            RoundResult.score
+        )
+        .join(
+            GamePlayer,
+            (RoundResult.player_id == GamePlayer.player_id) &
+            (RoundResult.game_id == GamePlayer.game_id)
+        )
+        .join(Player, GamePlayer.player_id == Player.id)
+        .filter(
+            RoundResult.game_id == game_id,
+            RoundResult.round_num == round_num
+        )
+        .order_by(GamePlayer.player_num)
+        .all()
+    )
+
+    players_info = [
+        {
+            "id": p.id,
+            "name": p.name,
+            "score": p.score
+        }
+        for p in players
+    ]
+
+    # Update scores based on form input
+    if request.method == "POST":
+        for player in players_info:
+            field_name = f"player{player["id"]}_score"
+            new_score = request.form.get(field_name)
+            app.logger.info(f"Form {field_name} value: {new_score!r}")
+            if new_score is not None:
+                player = db.session.get(RoundResult, (game_id, round_num, player["id"]))
+                player.score = int(new_score)
+
+        max_round_num = (
+            db.session.query(func.max(RoundResult.round_num))
+            .filter(RoundResult.game_id==game_id)
+            .scalar()
+        )
+
+        db.session.commit()
+        return redirect(url_for("add_round_result", game_id=game_id, round_num=max_round_num+1))
+
+
+    return render_template('edit.html', 
+                           game_id=game_id, 
+                           round_num=round_num,
+                           players=players_info)
+
+@app.route("/game/<int:game_id>/round/<int:round_num>/delete")
+def delete(game_id, round_num):
+    delete_round = (
+        db.session.query(RoundResult)
+        .filter(RoundResult.game_id==game_id, RoundResult.round_num==round_num)
+        .all()
+    )
+
+    for r in delete_round:
+        db.session.delete(r)
+        db.session.commit()
+
+    return redirect(url_for("add_round_result", game_id=game_id, round_num=round_num))
 
 @app.route("/end/game/<int:game_id>")
 def end_game(game_id):
@@ -210,10 +275,7 @@ def end_game(game_id):
         .order_by(func.coalesce(func.sum(RoundResult.score), 0).desc())
         .all()
     )
-    for p in players:
-        app.logger.info(f"Player: {p.name}, Total Score: {p.total_score}, ID: {p.id}")
 
-    # Update PlayerResult with player's total_score
     for p in players:
         player_result = PlayerResult(
             game_id=game_id,
@@ -235,7 +297,6 @@ def end_game(game_id):
         }
         for p in players
     ]
-    app.logger.info(f"Player list: {player_list}")
 
     # Get total rounds played
     total_rounds = db.session.query(func.max(RoundResult.round_num)).filter(RoundResult.game_id == game_id).scalar()
@@ -302,11 +363,11 @@ def game_info(game_id):
             func.sum(PlayerResult.total_score).label("total_score"),
         )
         .join(PlayerResult, PlayerResult.player_id == Player.id)
+        .filter(PlayerResult.game_id == game_id)
         .group_by(Player.name)
         .order_by(func.sum(PlayerResult.total_score).desc())
         .all()
     )
-    app.logger.info(f"Players in game {game_id}: {players}")
 
     return render_template('gameinfo.html', 
                            game_id=game_id, 

@@ -3,6 +3,7 @@ function toggleDealInner(radio) {
     let extraQs = document.getElementById("extra-question");
     if (radio.value === "No") {
         extraQs.style.display = "table-row";
+        extraQs.required = true;
     }else {
         extraQs.style.display = "none";
     }

@@ -39,7 +39,7 @@
             <tr id="extra-question" style="display: none;">
                 <td>Who deal-in?</td>
                 <td>
-                    <select name="deal_inner" id="deal_inner" required>
+                    <select name="deal_inner" id="deal_inner">
                         <option value="">--Choose--</option>
                         {% for player in players_info %}
                             <option value="{{ player.id }}">{{ player.name }}</option>
@@ -85,10 +85,18 @@
                     <td>{{ round.player_2_score }}</td>
                     <td>{{ round.player_3_score }}</td>
                     <td>{{ round.player_4_score }}</td>
+                    <td>
+                        <a href="/game/{{game_id}}/round/{{round.round_num}}/edit">edit</a>
+                        <br>
+                        <a href="/game/{{game_id}}/round/{{round.round_num}}/delete">delete</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
     </div>
 
     <script>
