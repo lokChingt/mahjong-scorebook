@@ -6,7 +6,7 @@ db = SQLAlchemy()
 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    total_rounds = db.Column(db.Integer, default=1)
+    total_rounds = db.Column(db.Integer, default=0)
     start_at = db.Column(db.DateTime, default=datetime.now)
     end_at = db.Column(db.DateTime, default=datetime.now)
 
