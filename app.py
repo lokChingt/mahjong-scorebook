@@ -65,9 +65,6 @@ def start_game():
 
 @app.route("/game/<int:game_id>/round/<int:round_num>", methods=["GET", "POST"])
 def add_round_result(game_id, round_num):
-    players = db.session.query(Player).join(GamePlayer).filter(GamePlayer.game_id==game_id).order_by(GamePlayer.player_num).all()
-    players_info = [{"id": player.id, "name": player.name} for player in players]
-
     # Handle form submission for round results
     if request.method == 'POST':
         faan = int(request.form.get("faan"))
@@ -133,6 +130,9 @@ def add_round_result(game_id, round_num):
     
     
     # GET: Show the results of the previous rounds
+    players = db.session.query(Player).join(GamePlayer).filter(GamePlayer.game_id==game_id).order_by(GamePlayer.player_num).all()
+    players_info = [{"id": player.id, "name": player.name} for player in players]
+
     rounds = (
         db.session.query(
             RoundResult.round_num,
@@ -219,6 +219,8 @@ def edit(game_id, round_num):
         for p in players
     ]
 
+    total_score = 0
+
     # Update scores based on form input
     if request.method == "POST":
         for player in players_info:
@@ -228,7 +230,18 @@ def edit(game_id, round_num):
             if new_score is not None:
                 player = db.session.get(RoundResult, (game_id, round_num, player["id"]))
                 player.score = int(new_score)
+                total_score += int(new_score)
+        
+        # Check if the scores are valid
+        if total_score != 0:
+            error_msg = f"Total score for round {round_num} must be 0."
+            return render_template('edit.html', 
+                                   game_id=game_id, 
+                                   round_num=round_num,
+                                   players=players_info,
+                                   error=error_msg)
 
+        # Get the max round number for the game
         max_round_num = (
             db.session.query(func.max(RoundResult.round_num))
             .filter(RoundResult.game_id==game_id)
@@ -368,6 +381,13 @@ def game_info(game_id):
         .order_by(func.sum(PlayerResult.total_score).desc())
         .all()
     )
+    app.logger.info(f"total_rounds: {total_rounds}")
+
+    # Check if game exists
+    if total_rounds is None:
+        return render_template('history.html', error="Game ID does not exist.")
+    elif total_rounds == 0:
+        return render_template('history.html', error="This game has no rounds played.")
 
     return render_template('gameinfo.html', 
                            game_id=game_id, 
