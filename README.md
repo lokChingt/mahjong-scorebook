@@ -8,7 +8,7 @@ This app allows the players to record, calculate and store their scores across m
 - **Player Management**: Track players across mumole sessions
 - **Session History**: View all past game results
 - **Leaderboard**: Ranks players based on their total scores
-- **Consistent Data**: AJl data are saved and retrieved from MySOL
+- **Consistent Data**: ALL data are saved and retrieved from MySQL
 
 ## Tech Stack:
 - **Frontend**: HTML, CSS/SCSS, JavaScript
