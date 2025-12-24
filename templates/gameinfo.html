@@ -51,12 +51,12 @@
             </tr>
         </thead>
         <tbody>
-            {% for player in players %}
+            {% for player in players_rank %}
                 <tr>
-                    {% if (player == players[0]) %}
-                        <th>👑</th>
+                    {% if (player == players_rank[0]) %}
+                        <td>👑</td>
                     {% else %}
-                        <th></th>
+                        <td></td>
                     {% endif %}
                     <td>{{ player.name }}</td>
                     <td>{{ player.total_score }}</td>
@@ -64,5 +64,26 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Detail round results -->
+     <table>
+        <thead>
+            <tr>
+                <th>Round</th>
+                {% for player in players %}
+                    <th>{{ player.name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        {% for round in round_list %}
+            <tr>
+                <td>{{ round.round_num }}</td>
+                <td>{{ round.player_1_score }}</td>
+                <td>{{ round.player_2_score }}</td>
+                <td>{{ round.player_3_score }}</td>
+                <td>{{ round.player_4_score }}</td>
+            </tr>
+            {% endfor %}
+     </table>
 
 {% endblock %}

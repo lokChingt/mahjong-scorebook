@@ -11,7 +11,7 @@ from models import db, Game, Player, GamePlayer, PlayerResult, RoundResult
 app = Flask(__name__)
 Scss(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mySQLpw00!@localhost/mahjong_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/mahjong_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -62,6 +62,37 @@ def start_game():
         return render_template('start.html')
     # end if else
 
+def get_round_info(game_id):
+    rounds = (
+    db.session.query(
+        RoundResult.round_num,
+        *[
+            func.sum(
+                case((GamePlayer.player_num == i, RoundResult.score), else_=0)
+                ).label(f"Player_{i}_score")
+            for i in range(1, 5)
+        ],
+    )
+    .join(GamePlayer, (RoundResult.game_id == GamePlayer.game_id) 
+            & (RoundResult.player_id == GamePlayer.player_id))
+    .filter(RoundResult.game_id == game_id)
+    .group_by(RoundResult.round_num)
+    .order_by(RoundResult.round_num)
+    .all()
+    )
+        
+    round_list = [
+        {
+            "round_num": r.round_num,
+            "player_1_score": r.Player_1_score,
+            "player_2_score": r.Player_2_score,
+            "player_3_score": r.Player_3_score,
+            "player_4_score": r.Player_4_score
+        }
+        for r in rounds
+    ]
+
+    return round_list
 
 @app.route("/game/<int:game_id>/round/<int:round_num>", methods=["GET", "POST"])
 def add_round_result(game_id, round_num):
@@ -133,34 +164,7 @@ def add_round_result(game_id, round_num):
     players = db.session.query(Player).join(GamePlayer).filter(GamePlayer.game_id==game_id).order_by(GamePlayer.player_num).all()
     players_info = [{"id": player.id, "name": player.name} for player in players]
 
-    rounds = (
-        db.session.query(
-            RoundResult.round_num,
-            *[
-                func.sum(
-                    case((GamePlayer.player_num == i, RoundResult.score), else_=0)
-                    ).label(f"Player_{i}_score")
-                for i in range(1, 5)
-            ],
-        )
-        .join(GamePlayer, (RoundResult.game_id == GamePlayer.game_id) 
-              & (RoundResult.player_id == GamePlayer.player_id))
-        .filter(RoundResult.game_id == game_id)
-        .group_by(RoundResult.round_num)
-        .order_by(RoundResult.round_num)
-        .all()
-    )
-
-    round_list = [
-        {
-            "round_num": r.round_num,
-            "player_1_score": r.Player_1_score,
-            "player_2_score": r.Player_2_score,
-            "player_3_score": r.Player_3_score,
-            "player_4_score": r.Player_4_score
-        }
-        for r in rounds
-    ]
+    round_list = get_round_info(game_id)
 
     # Sum scores per player
     scores = (
@@ -369,8 +373,16 @@ def game_info(game_id):
         start_time = "N/A"
         end_time = "N/A"
 
-    # Get players and their scores
-    players = (
+    # Get players info
+    players_info = (
+        db.session.query(Player.name)
+        .join(PlayerResult, PlayerResult.player_id == Player.id)
+        .filter(PlayerResult.game_id == game_id)
+        .all()
+    )
+
+    # Get players rank and their scores
+    players_rank = (
         db.session.query(
             Player.name,
             func.sum(PlayerResult.total_score).label("total_score"),
@@ -388,6 +400,9 @@ def game_info(game_id):
         return render_template('history.html', error="Game ID does not exist.")
     elif total_rounds == 0:
         return render_template('history.html', error="This game has no rounds played.")
+    
+    # Get all rounds results
+    round_list = get_round_info(game_id)
 
     return render_template('gameinfo.html', 
                            game_id=game_id, 
@@ -396,7 +411,9 @@ def game_info(game_id):
                            start_time=start_time, 
                            end_time=end_time, 
                            total_time=total_time, 
-                           players=players)
+                           players_rank=players_rank,
+                           players=players_info,
+                           round_list=round_list)
 
 
 @app.route("/leaderboard")
