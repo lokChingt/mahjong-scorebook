@@ -13,6 +13,7 @@
                 <th>Rank</th>
                 <th>Player Name</th>
                 <th>Total Score</th>
+                <th>Games</th>
             </tr>
         </thead>
         <tbody>
@@ -21,6 +22,7 @@
                 <td>{{ loop.index }}</td>
                 <td>{{ player.name }}</td>
                 <td>{{ player.total_score }}</td>
+                <td>{{ player.total_game }}</td>
             </tr>
             {% endfor %}
         </tbody>

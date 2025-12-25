@@ -423,6 +423,7 @@ def leaderboard():
         db.session.query(
             Player.name,
             func.sum(PlayerResult.total_score).label("total_score"),
+            func.count(PlayerResult.total_score).label("total_game")
         )
         .join(PlayerResult, PlayerResult.player_id == Player.player_id)
         .group_by(Player.name)
