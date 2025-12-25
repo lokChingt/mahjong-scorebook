@@ -50,14 +50,14 @@ def start_game():
 
             # Link players to game
             game_player = GamePlayer(
-                game_id=new_game.id,
+                game_id=new_game.game_id,
                 player_num=i+1,
-                player_id=player.id
+                player_id=player.player_id
             )
             db.session.add(game_player)
         
         db.session.commit()
-        return redirect(url_for('add_round_result', game_id=new_game.id, round_num=1))
+        return redirect(url_for('add_round_result', game_id=new_game.game_id, round_num=1))
     else:
         return render_template('start.html')
     # end if else
@@ -117,7 +117,7 @@ def add_round_result(game_id, round_num):
         
         # Get all player IDs
         players_id = db.session.execute(
-            select(Player.id).join(GamePlayer).where(GamePlayer.game_id == game_id)
+            select(Player.player_id).join(GamePlayer).where(GamePlayer.game_id == game_id)
         ).scalars().all()
 
         
@@ -162,7 +162,7 @@ def add_round_result(game_id, round_num):
     
     # GET: Show the results of the previous rounds
     players = db.session.query(Player).join(GamePlayer).filter(GamePlayer.game_id==game_id).order_by(GamePlayer.player_num).all()
-    players_info = [{"id": player.id, "name": player.name} for player in players]
+    players_info = [{"id": player.player_id, "name": player.name} for player in players]
 
     round_list = get_round_info(game_id)
 
@@ -196,7 +196,7 @@ def add_round_result(game_id, round_num):
 def edit(game_id, round_num):
     players = (
         db.session.query(
-            Player.id,
+            Player.player_id,
             Player.name,
             RoundResult.score
         )
@@ -205,7 +205,7 @@ def edit(game_id, round_num):
             (RoundResult.player_id == GamePlayer.player_id) &
             (RoundResult.game_id == GamePlayer.game_id)
         )
-        .join(Player, GamePlayer.player_id == Player.id)
+        .join(Player, GamePlayer.player_id == Player.player_id)
         .filter(
             RoundResult.game_id == game_id,
             RoundResult.round_num == round_num
@@ -216,7 +216,7 @@ def edit(game_id, round_num):
 
     players_info = [
         {
-            "id": p.id,
+            "id": p.player_id,
             "name": p.name,
             "score": p.score
         }
@@ -284,9 +284,9 @@ def end_game(game_id):
         db.session.query(
             Player.name,
             func.coalesce(func.sum(RoundResult.score), 0).label("total_score"),
-            Player.id
+            Player.player_id
         )
-        .join(RoundResult, RoundResult.player_id == Player.id)
+        .join(RoundResult, RoundResult.player_id == Player.player_id)
         .filter(RoundResult.game_id == game_id)
         .group_by(RoundResult.player_id)
         .order_by(func.coalesce(func.sum(RoundResult.score), 0).desc())
@@ -296,14 +296,14 @@ def end_game(game_id):
     for p in players:
         player_result = PlayerResult(
             game_id=game_id,
-            player_id=p.id,
+            player_id=p.player_id,
             total_score=p.total_score,
         )
         db.session.add(player_result)
 
     # Update Player total_score
     for p in players:
-        player = db.session.get(Player, p.id)
+        player = db.session.get(Player, p.player_id)
         player.total_score += p.total_score
     
     # Create a list of player names and their total scores
@@ -347,7 +347,7 @@ def end_game(game_id):
 def view_history():
     if request.method == 'POST':
         game_id = request.form.get("game_id")
-        if game_id in [str(g.id) for g in Game.query.all()]:
+        if game_id in [str(g.game_id) for g in Game.query.all()]:
                 return redirect(url_for('game_info', game_id=game_id))
         else:
             return render_template('history.html', error="Game ID does not exist.")
@@ -358,9 +358,9 @@ def view_history():
 @app.route("/history/game/<int:game_id>")
 def game_info(game_id):
     # Get game info
-    total_rounds = db.session.query(Game.total_rounds).filter(Game.id == game_id).scalar()
-    start_at = db.session.query(Game.start_at).filter(Game.id == game_id).scalar()
-    end_at = db.session.query(Game.end_at).filter(Game.id == game_id).scalar()
+    total_rounds = db.session.query(Game.total_rounds).filter(Game.game_id == game_id).scalar()
+    start_at = db.session.query(Game.start_at).filter(Game.game_id == game_id).scalar()
+    end_at = db.session.query(Game.end_at).filter(Game.game_id == game_id).scalar()
     total_time = str(end_at - start_at).split(".")[0] if end_at else "N/A"
 
     # Format date and time
@@ -376,7 +376,7 @@ def game_info(game_id):
     # Get players info
     players_info = (
         db.session.query(Player.name)
-        .join(PlayerResult, PlayerResult.player_id == Player.id)
+        .join(PlayerResult, PlayerResult.player_id == Player.player_id)
         .filter(PlayerResult.game_id == game_id)
         .all()
     )
@@ -387,7 +387,7 @@ def game_info(game_id):
             Player.name,
             func.sum(PlayerResult.total_score).label("total_score"),
         )
-        .join(PlayerResult, PlayerResult.player_id == Player.id)
+        .join(PlayerResult, PlayerResult.player_id == Player.player_id)
         .filter(PlayerResult.game_id == game_id)
         .group_by(Player.name)
         .order_by(func.sum(PlayerResult.total_score).desc())
@@ -424,7 +424,7 @@ def leaderboard():
             Player.name,
             func.sum(PlayerResult.total_score).label("total_score"),
         )
-        .join(PlayerResult, PlayerResult.player_id == Player.id)
+        .join(PlayerResult, PlayerResult.player_id == Player.player_id)
         .group_by(Player.name)
         .order_by(func.sum(PlayerResult.total_score).desc())
         .all()
