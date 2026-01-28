@@ -64,21 +64,21 @@ def start_game():
 
 def get_round_info(game_id):
     rounds = (
-    db.session.query(
-        RoundResult.round_num,
-        *[
-            func.sum(
-                case((GamePlayer.player_num == i, RoundResult.score), else_=0)
-                ).label(f"Player_{i}_score")
-            for i in range(1, 5)
-        ],
-    )
-    .join(GamePlayer, (RoundResult.game_id == GamePlayer.game_id) 
-            & (RoundResult.player_id == GamePlayer.player_id))
-    .filter(RoundResult.game_id == game_id)
-    .group_by(RoundResult.round_num)
-    .order_by(RoundResult.round_num)
-    .all()
+        db.session.query(
+            RoundResult.round_num,
+            *[
+                func.sum(
+                    case((GamePlayer.player_num == i, RoundResult.score), else_=0)
+                    ).label(f"Player_{i}_score")
+                for i in range(1, 5)
+            ],
+        )
+        .join(GamePlayer, (RoundResult.game_id == GamePlayer.game_id) 
+                & (RoundResult.player_id == GamePlayer.player_id))
+        .filter(RoundResult.game_id == game_id)
+        .group_by(RoundResult.round_num)
+        .order_by(RoundResult.round_num)
+        .all()
     )
         
     round_list = [
